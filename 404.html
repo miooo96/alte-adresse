@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title></title>
+<script>
+/* Die alte App unter dieser Adresse gibt es nicht mehr (Mirko 02.11.2026:
+   "hall tabakwaren spesen tool soll es garnicht mehr geben! komplett loeschen!
+   nur noch rieb-spesen soll bestehen bleiben!").
+   Leeres Blatt ohne Text. Loescht auf dem Geraet ALLES, was die alte App unter
+   dieser Adresse abgelegt hat: Offline-Speicher (Service Worker, Cache),
+   Eintraege (localStorage, sessionStorage), Datenbanken (PDF-Ablage,
+   Stoerungsliste, Firebase-Anmeldung und -Zwischenspeicher), Cookies.
+   rieb-spesen.de ist eine andere Adresse - der Browser trennt die Speicher je
+   Adresse, dort wird nichts beruehrt. Jede alte Unterseite (/app/, Anleitung,
+   ...) landet hier. Gleicher Inhalt wie index.html. */
+(function () {
+  function still(f) { try { f(); } catch (e) { /* weiter mit dem Rest */ } }
+  still(function () { localStorage.clear(); });
+  still(function () { sessionStorage.clear(); });
+  still(function () {
+    document.cookie.split(";").forEach(function (c) {
+      var n = c.split("=")[0].trim();
+      if (n) document.cookie = n + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    });
+  });
+  still(function () {
+    if (!window.indexedDB) return;
+    var weg = function (n) { still(function () { indexedDB.deleteDatabase(n); }); };
+    ["spesen-pdf-archiv", "stoerungsliste", "firebaseLocalStorageDb", "firebase-heartbeat-database",
+     "firebase-installations-database", "firestore/[DEFAULT]/hall-cd0f1/main"].forEach(weg);
+    if (indexedDB.databases) indexedDB.databases().then(function (dbs) {
+      dbs.forEach(function (d) { if (d && d.name) weg(d.name); });
+    }, function () {});
+  });
+  still(function () { if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }); });
+  still(function () { if (navigator.serviceWorker) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }); });
+})();
+</script>
+</head>
+<body></body>
+</html>
