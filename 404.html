@@ -19,11 +19,23 @@
    Adresse, dort wird nichts beruehrt. Gleicher Inhalt wie 404.html. */
 (function () {
   function still(f) { try { f(); } catch (e) { /* weiter mit dem Rest */ } }
-  /* ⏸ PAUSIERT 02.11.2026: Das Loeschen der EINTRAEGE (localStorage, sessionStorage, Cookies, Datenbanken).
-     Mirko fragte danach: "kannst du auch die daten der jeweiligen mitarbeiter automatisch in die neue rieb
-     spesen app uebertragen?" - dafuer muessen die Eintraege noch da sein. Bis das entschieden ist, wird nur
-     die alte APP entfernt (Service Worker, Offline-Speicher), die Eintraege bleiben liegen. Der Loesch-Code
-     steht in der Fassung vom 02.11. (GitHub alte-adresse, erster Commit). */
+  still(function () { localStorage.clear(); });
+  still(function () { sessionStorage.clear(); });
+  still(function () {
+    document.cookie.split(";").forEach(function (c) {
+      var n = c.split("=")[0].trim();
+      if (n) document.cookie = n + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    });
+  });
+  still(function () {
+    if (!window.indexedDB) return;
+    var weg = function (n) { still(function () { indexedDB.deleteDatabase(n); }); };
+    ["spesen-pdf-archiv", "stoerungsliste", "firebaseLocalStorageDb", "firebase-heartbeat-database",
+     "firebase-installations-database", "firestore/[DEFAULT]/hall-cd0f1/main"].forEach(weg);
+    if (indexedDB.databases) indexedDB.databases().then(function (dbs) {
+      dbs.forEach(function (d) { if (d && d.name) weg(d.name); });
+    }, function () {});
+  });
   /* Offline-Speicher und Service Worker: sofort, nach dem Laden und nach 2 s noch einmal. Grund (gemessen
      02.11.2026): Beim ersten Oeffnen steuert noch der ALTE Worker die Seite und legt das Bild /rs.png und die
      Seite selbst wieder in seinen Zwischenspeicher - kurz NACHDEM hier geloescht wurde. */

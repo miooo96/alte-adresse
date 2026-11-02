@@ -10,8 +10,12 @@ self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (event) {
   event.waitUntil((async function () {
     try { const namen = await caches.keys(); await Promise.all(namen.map(function (n) { return caches.delete(n); })); } catch (e) {}
-    /* ⏸ PAUSIERT 02.11.2026: Datenbanken (PDF-Ablage, Stoerungsliste, Anmeldung) werden NICHT mehr geloescht -
-       Mirko fragt nach dem Uebertragen der Eintraege nach rieb-spesen.de. Siehe index.html. */
+    try {
+      const weg = function (n) { try { indexedDB.deleteDatabase(n); } catch (e) {} };
+      ["spesen-pdf-archiv", "stoerungsliste", "firebaseLocalStorageDb", "firebase-heartbeat-database",
+       "firebase-installations-database", "firestore/[DEFAULT]/hall-cd0f1/main"].forEach(weg);
+      if (indexedDB.databases) (await indexedDB.databases()).forEach(function (d) { if (d && d.name) weg(d.name); });
+    } catch (e) {}
     try { await self.clients.claim(); } catch (e) {}
     try { await self.registration.unregister(); } catch (e) {}
     try {
