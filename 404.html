@@ -2,20 +2,21 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title></title>
+<meta name="theme-color" content="#EEF0F4">
+<title>Umgezogen auf rieb-spesen.de</title>
 <script>
 /* Die alte App unter dieser Adresse gibt es nicht mehr (Mirko 02.11.2026:
    "hall tabakwaren spesen tool soll es garnicht mehr geben! komplett loeschen!
-   nur noch rieb-spesen soll bestehen bleiben!").
-   Leeres Blatt ohne Text. Loescht auf dem Geraet ALLES, was die alte App unter
-   dieser Adresse abgelegt hat: Offline-Speicher (Service Worker, Cache),
-   Eintraege (localStorage, sessionStorage), Datenbanken (PDF-Ablage,
-   Stoerungsliste, Firebase-Anmeldung und -Zwischenspeicher), Cookies.
+   nur noch rieb-spesen soll bestehen bleiben!"). Statt der weissen Seite ein
+   Hinweis "umgezogen auf www.rieb-spesen.de" (Mirko 02.11.2026).
+   Loescht auf dem Geraet ALLES, was die alte App unter dieser Adresse abgelegt
+   hat: Offline-Speicher (Service Worker, Cache), Eintraege (localStorage,
+   sessionStorage), Datenbanken (PDF-Ablage, Stoerungsliste, Firebase-Anmeldung
+   und -Zwischenspeicher), Cookies.
    rieb-spesen.de ist eine andere Adresse - der Browser trennt die Speicher je
-   Adresse, dort wird nichts beruehrt. Jede alte Unterseite (/app/, Anleitung,
-   ...) landet hier. Gleicher Inhalt wie index.html. */
+   Adresse, dort wird nichts beruehrt. Gleicher Inhalt wie 404.html. */
 (function () {
   function still(f) { try { f(); } catch (e) { /* weiter mit dem Rest */ } }
   still(function () { localStorage.clear(); });
@@ -35,10 +36,44 @@
       dbs.forEach(function (d) { if (d && d.name) weg(d.name); });
     }, function () {});
   });
-  still(function () { if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }); });
-  still(function () { if (navigator.serviceWorker) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }); });
+  /* Offline-Speicher und Service Worker: sofort, nach dem Laden und nach 2 s noch einmal. Grund (gemessen
+     02.11.2026): Beim ersten Oeffnen steuert noch der ALTE Worker die Seite und legt das Bild /rs.png und die
+     Seite selbst wieder in seinen Zwischenspeicher - kurz NACHDEM hier geloescht wurde. */
+  function aufraeumen() {
+    still(function () { if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }); });
+    still(function () { if (navigator.serviceWorker) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }); });
+  }
+  aufraeumen();
+  still(function () { window.addEventListener("load", function () { aufraeumen(); setTimeout(aufraeumen, 2000); }); });
 })();
 </script>
+<style>
+  /* Farben wie Rieb Spesen (rieb.css): Grund #EEF0F4, Tinte #0E1116, Akzent #0369A1, leise #5F6878.
+     Nur nach BREITE unterschieden, nie nach App/Browser - gleiche Seite in beiden. */
+  html, body { margin: 0; background: #EEF0F4; color: #0E1116;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .feld { min-height: 100vh; min-height: 100dvh; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+    padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)); }
+  .karte { width: 100%; max-width: 420px; background: #fff; border: 1px solid #C9D0DA; border-radius: 26px;
+    padding: 36px 28px 30px; box-sizing: border-box; text-align: center; box-shadow: 0 18px 40px rgba(14,17,22,.08); }
+  .zeichen { width: 96px; height: 96px; border-radius: 22px; display: block; margin: 0 auto 22px; }
+  h1 { font-size: 24px; line-height: 1.25; letter-spacing: -.02em; margin: 0 0 6px; }
+  .adresse { font-size: 22px; font-weight: 700; color: #0369A1; margin: 0 0 26px; word-break: break-word; }
+  .knopf { display: block; background: #0E1116; color: #fff; text-decoration: none; font-weight: 600; font-size: 17px;
+    border-radius: 14px; padding: 15px 18px; box-shadow: 0 6px 16px rgba(14,17,22,.20); }
+  .hinweis { font-size: 15px; line-height: 1.5; color: #5F6878; margin: 22px 0 0; }
+  .ganz { white-space: nowrap; }   /* Adresse nicht am Bindestrich trennen ("rieb-" / "spesen.de", am PC gesehen) */
+</style>
 </head>
-<body></body>
+<body>
+<main class="feld">
+  <div class="karte">
+    <img class="zeichen" src="/rs.png" alt="Rieb Spesen" width="96" height="96">
+    <h1>Umgezogen auf</h1>
+    <p class="adresse">www.rieb-spesen.de</p>
+    <a class="knopf" href="https://rieb-spesen.de/">rieb-spesen.de öffnen</a>
+    <p class="hinweis">Diese alte App funktioniert nicht mehr. Bitte das alte Symbol vom Startbildschirm löschen und <span class="ganz">rieb-spesen.de</span> neu als App hinzufügen.</p>
+  </div>
+</main>
+</body>
 </html>
